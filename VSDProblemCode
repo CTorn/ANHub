@@ -1,48 +1,283 @@
-//HTML Table to CSV
-        function exportTableToCSV($table, filename) {
-            var $rows = $table.find('tr:has(td),tr:has(th)'),
-                tmpColDelim = String.fromCharCode(11),
-                tmpRowDelim = String.fromCharCode(0),
-                colDelim = ',',
-                rowDelim = '\r\n',
-                csv = $rows.map(function (i, row) {
-                    var $row = $(row), $cols = $row.find('td,th');
-                    return $cols.map(function (j, col) {
-                        var $col = $(col), text = $col.text();                
-                        return text.replace(/"/g, '');
-                    }).get().join(tmpColDelim);
-                }).get().join(tmpRowDelim)
-                    .split(tmpRowDelim).join(rowDelim)
-                    .split(tmpColDelim).join(colDelim),
+//FILLING IN THE TABLE HEAD DATA
+						if (headCount == 0) {
+							all = '<tr style="font-weight:bold">';
+							if (uswitch) {
+								all += '<th id = "usr">User</th>';
+								uL = '<th id = "usr">User</th>';
+							}
+							//all += '<th id = "mini1" colspan="18">MiniGame1Data</th>';
+							if (cswitch) {
+								all += '<th id = "clinichqPhase1" colspan="96">Clinic & HQ Data (Phase 1)</th>';
+								all += '<th id = "clinichqPhase2" colspan="162">Clinic & HQ Data (Phase 2)</th>';
+								all += '<th id = "clinichqPhase3" colspan="272">Clinic & HQ Data (Phase 3)</th>';
+								cL = '<th id = "clinichqPhase1" colspan="96">Clinic & HQ Data (Phase 1)</th>';
+								cL += '<th id = "clinichqPhase2" colspan="162">Clinic & HQ Data (Phase 2)</th>';
+								cL += '<th id = "clinichqPhase3" colspan="272">Clinic & HQ Data (Phase 3)</th>';	
+							}
+							if (cswitch == 0 && hqswitch) {
+								all += '<th id = "hqData" colspan="18">HQ Data</th>';
+								hL = '<th id = "hqData" colspan="18">HQ Data</th>';
+							}
+							//all += '<th id = "mini2" colspan="18">MiniGame2Data</th>';
+							if (sswitch) {
+								all += '<th id = "sita" colspan="49">SituationalAwarenessData</th>';
+								sL += '<th id = "sita" colspan="49">SituationalAwarenessData</th>';
+							}
+							if (useSwitch) {
+								all += '<th id = "use" colspan="36">Usability</th>';
+								usL = '<th id = "use" colspan="36">Usability</th>';
+							}
+							all += '</tr>';
 
-                // Data URI
-                csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+							var hitem = '<tr style="font-weight:bold">';
 
-            //Problem Code, is meant to grab csv data, and remove 'User'
-            console.log('csv data', csv);
-            var values = csv.split(',');
-            console.log('initial', values);
-            for (var i = 0; i < values.length; i++) {
-                console.log('test', values[i]);
-                console.log('test2', values[i] == 'User');
-                if (values[i] == 'User') {
-                    values.splice(i, 1);
-                    console.log("Fails here");
-                    return values.join();  //This is the part that is failing.
-                    console.log("values recheck", values);
-                }
-                console.log('testval', values);
-            }
+							//user section
+							if ((typeof (completeStructure[i].User) == "string") && (completeStructure[i].User == 'No User Data Found!')) {
+								uhead += '<th id = "clinicHError">';
+								uhead += "User Header Data Not Found!";
+								uhead += '</th>';
+							} else {
+								uhead += '<th id = "usri">';
+								uhead += 'UserID';
+								uhead += '</th>';
+							}
+							hitem += uhead;
 
-            if (window.navigator.msSaveBlob) { // IE 10+
-                //alert('IE' + csv);
-                window.navigator.msSaveOrOpenBlob(new Blob([csv], { type: "text/plain;charset=utf-8;" }), "csvname.csv")
-            }
-            else {
-                $(this).attr({ 'download': filename, 'href': csvData, 'target': '_blank' });
-            }
-        }
+							//    //minigame1 section
+							//    for (po in completeStructure[i].MiniGame1Data.Questions) {
+							//        var key = Object.keys(completeStructure[i].MiniGame1Data.Questions[po]);
+							//        hitem += '<th id = "mini1q"' + po + '>';
+							//        hitem += key[0];
+							//        hitem += '</th>';
+							//        for (lk in completeStructure[i].MiniGame1Data.Questions[po].QuestionSections) {
+							//            key = Object.keys(completeStructure[i].MiniGame1Data.Questions[po].QuestionSections[lk]);
+							//            hitem += '<th id = "mini1qs"' + lk + '>';
+							//            hitem += key[0];
+							//            hitem += '</th>';
+							//            for (er in completeStructure[i].MiniGame1Data.Questions[po].QuestionSections[lk].SelectedAnswers) {
+							//                key = Object.keys(completeStructure[i].MiniGame1Data.Questions[po].QuestionSections[lk].SelectedAnswers[er]);
+							//                hitem += '<th id = "mini1sa1"' + er + '>';
+							//                hitem += key[1];
+							//                hitem += '</th>';
+							//                hitem += '<th id = "mini1sa2"' + er + '>';
+							//                hitem += key[0];
+							//                hitem += '</th>';
+							//            }
+							//        }
+							//    }
 
-        $("#xx").on('click', function (event) {
-            exportTableToCSV.apply(this, [$('#table'), 'VirusSlayerData.csv']);
-        });
+							//gppd header section (phase 1)
+							if ((typeof (completeStructure[i].GameplayPhaseData.averagesData) == "string") && (completeStructure[i].GameplayPhaseData.averagesData == "-999")) {
+								chead += '<th id = "gppdHError">';
+								chead += "Average Clinic Viewing Time Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableGPPDHData(0);
+							}
+
+							//clinic header section (phase 1)
+							if ((typeof (completeStructure[i].GameplayPhaseData.clinicData) == "string") && (completeStructure[i].GameplayPhaseData.clinicData == 'No Clinic Data Found!')) {
+								chead += '<th id = "clinicHError">';
+								chead += "Clinic Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableClinicHData(0);
+								chead += tableClinicHData(1);
+								chead += tableClinicHData(2);
+								chead += tableClinicHData(3);
+                            }
+                            chhead = chead;
+							hitem += chead;
+
+							//hq header section (phase 1)
+							if ((typeof (completeStructure[i].GameplayPhaseData.HeadquartersData) == "string") && (completeStructure[i].GameplayPhaseData.HeadquartersData == 'No Hq Data Found!')) {
+								hhead += '<th id = "HQHError">';
+								hhead += "HQ Header Data Not Found!";
+								hhead += '</th>';
+							} else {
+								hhead += tableHQHData(0);
+                            }
+                            chhead += hhead;
+							hitem += hhead;
+
+							//gppd header section (phase 2)
+							if ((typeof (completeStructure[i].GameplayPhaseData.averagesData) == "string") && (completeStructure[i].GameplayPhaseData.averagesData == "-999")) {
+								chead += '<th id = "gppdHError">';
+								chead += "Average Clinic Viewing Time Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableGPPDHData(1);
+							}
+
+							//clinic header section (phase 2)
+							if ((typeof (completeStructure[i].GameplayPhaseData.clinicData) == "string") && (completeStructure[i].GameplayPhaseData.clinicData == 'No Clinic Data Found!')) {
+								chead += '<th id = "clinicHError">';
+								chead += "Clinic Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableClinicHData(4);
+								chead += tableClinicHData(5);
+								chead += tableClinicHData(6);
+								chead += tableClinicHData(7);
+								chead += tableClinicHData(8);
+								chead += tableClinicHData(9);
+								chead += tableClinicHData(10);
+                            }
+                            chhead += chead;
+							hitem += chead;
+
+							//hq header section (phase 2)
+							if ((typeof (completeStructure[i].GameplayPhaseData.HeadquartersData) == "string") && (completeStructure[i].GameplayPhaseData.HeadquartersData == 'No Hq Data Found!')) {
+								hhead += '<th id = "HQHError">';
+								hhead += "HQ Header Data Not Found!";
+								hhead += '</th>';
+							} else {
+								hhead += tableHQHData(1);
+                            }
+                            chhead += hhead;
+                            hitem += hhead;
+                            console.log("hq1", hhead);
+
+							//gppd header section (phase 3)
+							if ((typeof (completeStructure[i].GameplayPhaseData.averagesData) == "string") && (completeStructure[i].GameplayPhaseData.averagesData == "-999")) {
+								chead += '<th id = "gppdHError">';
+								chead += "Average Clinic Viewing Time Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableGPPDHData(2);
+							}
+
+							//clinic header section (phase 3)
+							if ((typeof (completeStructure[i].GameplayPhaseData.clinicData) == "string") && (completeStructure[i].GameplayPhaseData.clinicData == 'No Clinic Data Found!')) {
+								chead += '<th id = "clinicHError">';
+								chead += "Clinic Header Data Not Found!";
+								chead += '</th>';
+							} else {
+								chead += tableClinicHData(11);
+								chead += tableClinicHData(12);
+								chead += tableClinicHData(13);
+								chead += tableClinicHData(14);
+								chead += tableClinicHData(15);
+								chead += tableClinicHData(16);
+								chead += tableClinicHData(17);
+								chead += tableClinicHData(18);
+								chead += tableClinicHData(19);
+								chead += tableClinicHData(20);
+								chead += tableClinicHData(21);
+								chead += tableClinicHData(22);
+                            }
+                            chhead += chead;
+                            hitem += chead;
+                            //console.log("Head", hitem);
+
+							//hq header section (phase 3)
+							if ((typeof (completeStructure[i].GameplayPhaseData.HeadquartersData) == "string") && (completeStructure[i].GameplayPhaseData.HeadquartersData == 'No Hq Data Found!')) {
+								hhead += '<th id = "HQHError">';
+								hhead += "HQ Header Data Not Found!";
+								hhead += '</th>';
+							} else {
+								hhead += tableHQHData(2);
+                            }
+                            chhead += hhead;
+							hitem += hhead;
+
+							function tableGPPDHData(phase) {
+								var gKeys = '';
+								key = Object.keys(completeStructure[i].GameplayPhaseData.averagesData[phase]);
+								for (gppd = 0; gppd < key.length; gppd++) {
+									gKeys += '<th id = "clinicgppd"' + gppd + '>';
+									gKeys += key[gppd];
+									gKeys += '</th>';
+                                }
+                                console.log("GH:", gKeys);
+								return gKeys;
+							}
+
+							function tableClinicHData(phase) {
+								var ckeys = '';
+								key = Object.keys(completeStructure[i].GameplayPhaseData.clinicData[phase]);
+								for (uh = 0; uh < key.length; uh++) {
+									ckeys += '<th id = "clinic"' + uh + '>';
+									ckeys += key[uh];
+									ckeys += '</th>';
+                                }
+                                //console.log("CH", ckeys);
+								return ckeys;
+							}
+
+							function tableHQHData(phase) {
+								var keys = '';
+								key = Object.keys(completeStructure[i].GameplayPhaseData.HeadquartersData[phase]);
+								for (ph = 0; ph < key.length; ph++) {
+									keys += '<th id = "hq"' + ph + '>';
+									keys += key[ph];
+									keys += '</th>';
+								}
+								return keys;
+							}
+
+							//    //minigame2 section
+							//    for (op in completeStructure[i].MiniGame1Data.Questions) {
+							//        key = Object.keys(completeStructure[i].MiniGame1Data.Questions[op]);
+							//        hitem += '<th id = "mini2q"' + op + '>';
+							//        hitem += key[0];
+							//        hitem += '</th>';
+							//        for (kl in completeStructure[i].MiniGame1Data.Questions[op].QuestionSections) {
+							//            key = Object.keys(completeStructure[i].MiniGame1Data.Questions[op].QuestionSections[kl]);
+							//            hitem += '<th id = "mini2qs"' + kl + '>';
+							//            hitem += key[0];
+							//            hitem += '</th>';
+							//            for (re in completeStructure[i].MiniGame1Data.Questions[op].QuestionSections[kl].SelectedAnswers) {
+							//                key = Object.keys(completeStructure[i].MiniGame1Data.Questions[op].QuestionSections[kl].SelectedAnswers[re]);
+							//                hitem += '<th id = "mini2sa1"' + re + '>';
+							//                hitem += key[1];
+							//                hitem += '</th>';
+							//                hitem += '<th id = "mini2sa2"' + re + '>';
+							//                hitem += key[0];
+							//                hitem += '</th>';
+							//            }
+							//        }
+							//    }
+
+							//situational awareness section
+							if ((typeof (completeStructure[i].SituationalAwareness) == "string") && (completeStructure[i].SituationalAwareness == 'No Situational Awareness Data Found!')) {
+								shead += '<th id = "sitaSAHError">';
+								shead += "Situational Awarenesss Header Data Not Found!";
+								shead += '</th>';
+							} else {
+								shead += '<th id="sitahelpClickHeader">';
+								shead += 'helpClicked';
+								shead += '</th>';
+								for (sa in completeStructure[i].SituationalAwareness.Answers) {
+									key = Object.keys(completeStructure[i].SituationalAwareness.Answers[sa]);
+									for (sit = 0; sit < key.length; sit++) {
+										shead += '<th id = "sitaHead"' + sit + '>';
+										shead += key[sit];
+										shead += '</th>';
+									}
+								}
+							}
+							hitem += shead;
+
+							//usability section
+							if ((typeof (completeStructure[i].Usability) == "string") && (completeStructure[i].Usability == 'No Usability Data Found!')) {
+								ushead += '<th id = "UsabilityHError">';
+								ushead += "Usability Header Data Not Found!";
+								ushead += '</th>';
+							} else {
+								for (fd in completeStructure[i].Usability.Questions) {
+									key = Object.keys(completeStructure[i].Usability.Questions[fd].Questions);
+									ushead += '<th id = "use1"' + fd + '>';
+									ushead += key[0];
+									ushead += '</th>';
+									ushead += '<th id = "use2"' + fd + '>';
+									ushead += key[1];
+									ushead += '</th>';
+								}
+								hitem += ushead;
+								hitem += '</tr>';
+								all += hitem;
+								hitem = '';
+								headCount++;
+							}
+						}
